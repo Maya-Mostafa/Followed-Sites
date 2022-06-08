@@ -12,7 +12,9 @@ import FollowedSites from './components/FollowedSites';
 import { IFollowedSitesProps } from './components/IFollowedSitesProps';
 
 export interface IFollowedSitesWebPartProps {
-  description: string;
+  wpTitle: string;
+  editTxt: string;
+  okTxt: string;
 }
 
 export default class FollowedSitesWebPart extends BaseClientSideWebPart<IFollowedSitesWebPartProps> {
@@ -21,7 +23,10 @@ export default class FollowedSitesWebPart extends BaseClientSideWebPart<IFollowe
     const element: React.ReactElement<IFollowedSitesProps> = React.createElement(
       FollowedSites,
       {
-        description: this.properties.description
+        context: this.context,
+        wpTitle: this.properties.wpTitle,
+        editTxt: this.properties.editTxt,
+        okTxt: this.properties.okTxt
       }
     );
 
@@ -47,8 +52,18 @@ export default class FollowedSitesWebPart extends BaseClientSideWebPart<IFollowe
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
+                PropertyPaneTextField('wpTitle', {
+                  label: 'Links Title',
+                  value: this.properties.wpTitle,
+                  description: 'e.g. Followed Sites'
+                }),
+                PropertyPaneTextField('editTxt', {
+                  label: 'Edit Button Text',
+                  value: this.properties.editTxt,
+                }),
+                PropertyPaneTextField('okTxt', {
+                  label: 'Ok/Apply Button Text',
+                  value: this.properties.okTxt,
                 })
               ]
             }

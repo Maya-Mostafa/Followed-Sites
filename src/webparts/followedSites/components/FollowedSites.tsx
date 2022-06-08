@@ -1,25 +1,87 @@
 import * as React from 'react';
 import styles from './FollowedSites.module.scss';
+import { TextField, ActionButton, Dialog, DialogFooter, PrimaryButton, DefaultButton, DialogType } from 'office-ui-fabric-react';
 import { IFollowedSitesProps } from './IFollowedSitesProps';
-import { escape } from '@microsoft/sp-lodash-subset';
+import { getFollowedDocuments, unFollowDocument } from '../Servies/DataRequests';
+import { ISites } from './ISites/ISites';
 
-export default class FollowedSites extends React.Component<IFollowedSitesProps, {}> {
-  public render(): React.ReactElement<IFollowedSitesProps> {
-    return (
-      <div className={ styles.followedSites }>
-        <div className={ styles.container }>
-          <div className={ styles.row }>
-            <div className={ styles.column }>
-              <span className={ styles.title }>Welcome to SharePoint!</span>
-              <p className={ styles.subTitle }>Customize SharePoint experiences using Web Parts.</p>
-              <p className={ styles.description }>{escape(this.props.description)}</p>
-              <a href="https://aka.ms/spfx" className={ styles.button }>
-                <span className={ styles.label }>Learn more</span>
-              </a>
-            </div>
-          </div>
+export default function FollowedSites(props: IFollowedSitesProps){
+
+  const [ followedDocs, setFollowedDocs ] = React.useState([]);
+  const [ searchTxt, setSearchTxt ] = React.useState('');
+  const [ editEnabled, setEditEnabled ] = React.useState(false);
+  const [ hideDialog, setHideDialog ] = React.useState(true);
+  const [ docLinkState, setDocumentLinkState ] = React.useState('');
+
+  const editText = editEnabled ? props.okTxt : props.editTxt;
+
+  const updateFollowedDocs = () =>{
+    getFollowedDocuments(props.context).then(results => {
+      setFollowedDocs(results);
+    });
+  };
+
+  React.useEffect(()=>{
+    updateFollowedDocs();
+  }, []);
+
+  const promptUnfollowDialog = (docLink: string) =>{
+    setHideDialog(false);
+    setDocumentLinkState(docLink);
+  };
+
+  const unFollowHandler = () => {
+    unFollowDocument(props.context, docLinkState).then(()=>{
+      updateFollowedDocs();
+      setHideDialog(true);
+    });
+  };
+
+
+
+  const dialogContentProps = {
+    type: DialogType.normal,
+    title: 'Unfollow Document',
+    closeButtonAriaLabel: 'Close',
+    subText: 'Are you sure you want to Unfollow this document?',
+  };
+
+  return(
+    <div className={ styles.followedSites }>
+
+      <div className={styles.linksHdrOps}>
+        <TextField
+          onChange={(_: any, text: string) => setSearchTxt(text)}
+          className={styles.linksHdrTxt}
+          label={props.wpTitle}
+          underlined
+          placeholder='Search'
+          value={searchTxt}
+        />
+        <div className={styles.linksHdrBtn}>
+          <ActionButton onClick={() => setEditEnabled(prev => !prev)} iconProps={{iconName: editEnabled ? 'CheckMark' : 'Edit'}}>{editText}</ActionButton>
         </div>
       </div>
-    );
-  }
+
+      <ISites 
+        documentItems = {followedDocs} 
+        unFollowHandler = {promptUnfollowDialog}
+        editEnabled = {editEnabled}
+        searchTxt = {searchTxt}
+      />
+
+      <Dialog
+        hidden={hideDialog}
+        onDismiss={() => setHideDialog(true)}
+        dialogContentProps={dialogContentProps}
+      >
+        <DialogFooter>
+          <PrimaryButton onClick={unFollowHandler} text="Yes" />
+          <DefaultButton onClick={() => setHideDialog(true)} text="No" />
+        </DialogFooter>
+      </Dialog>
+
+    </div>
+  );
 }
+
