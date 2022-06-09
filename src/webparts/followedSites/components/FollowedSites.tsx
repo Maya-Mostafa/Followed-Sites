@@ -2,7 +2,7 @@ import * as React from 'react';
 import styles from './FollowedSites.module.scss';
 import { TextField, ActionButton, Dialog, DialogFooter, PrimaryButton, DefaultButton, DialogType } from 'office-ui-fabric-react';
 import { IFollowedSitesProps } from './IFollowedSitesProps';
-import { getFollowedDocuments, unFollowDocument } from '../Servies/DataRequests';
+import { getFollowedSites, unFollowSite } from '../Servies/DataRequests';
 import { ISites } from './ISites/ISites';
 
 export default function FollowedSites(props: IFollowedSitesProps){
@@ -16,7 +16,7 @@ export default function FollowedSites(props: IFollowedSitesProps){
   const editText = editEnabled ? props.okTxt : props.editTxt;
 
   const updateFollowedDocs = () =>{
-    getFollowedDocuments(props.context).then(results => {
+    getFollowedSites(props.context).then(results => {
       setFollowedDocs(results);
     });
   };
@@ -31,12 +31,11 @@ export default function FollowedSites(props: IFollowedSitesProps){
   };
 
   const unFollowHandler = () => {
-    unFollowDocument(props.context, docLinkState).then(()=>{
+    unFollowSite(props.context, docLinkState).then(()=>{
       updateFollowedDocs();
       setHideDialog(true);
     });
   };
-
 
 
   const dialogContentProps = {

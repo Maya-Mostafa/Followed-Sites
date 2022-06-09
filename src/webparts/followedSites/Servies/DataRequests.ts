@@ -1,19 +1,20 @@
 import {WebPartContext} from '@microsoft/sp-webpart-base';
 import { SPHttpClient, ISPHttpClientOptions } from "@microsoft/sp-http";
 
-export const getFollowedDocuments = async (context: WebPartContext) => {
-    const responseUrl = `${context.pageContext.web.absoluteUrl}/_api/social.following/my/Followed(types=2)`;
-
+export const getFollowedSites = async (context: WebPartContext) => {
+    const responseUrl = `${context.pageContext.web.absoluteUrl}/_api/social.following/my/Followed(types=4)`;
+    
     try{
         const response = await context.spHttpClient.get(responseUrl, SPHttpClient.configurations.v1);
         if (response.ok){
             const responseResults = await response.json();
-            return responseResults.value.map(item => {
+            const unsortedResults =  responseResults.value.map(item => {
                 return {
                     title: item.Name,
                     url: item.ContentUri
                 };
             });
+            return unsortedResults.sort((a, b) => a.title.localeCompare(b.title));
         }else{
             console.log("Response Error: ", response.statusText);
         }
@@ -24,9 +25,9 @@ export const getFollowedDocuments = async (context: WebPartContext) => {
 
 };
 
-export const unFollowDocument = async (context: WebPartContext, docLink: string) => {
-    const responseUrl = `${context.pageContext.web.absoluteUrl}/_api/social.following/stopfollowing(ActorType=1,ContentUri=@v,Id=null)?@v='${docLink}'`;
-
+export const unFollowSite = async (context: WebPartContext, siteLink: string) => {
+    const responseUrl = `${context.pageContext.web.absoluteUrl}/_api/social.following/stopfollowing(ActorType=2,ContentUri=@v,Id=null)?@v='${siteLink}'`;
+                                                         
     let spOptions: ISPHttpClientOptions = {
         headers:{
             "Accept": "application/json;odata=nometadata", 
@@ -38,17 +39,17 @@ export const unFollowDocument = async (context: WebPartContext, docLink: string)
     try{
         const response = await context.spHttpClient.post(responseUrl, SPHttpClient.configurations.v1, spOptions);
         if (response.ok){
-            console.log("Document is unfollowed successfully", docLink);
+            console.log("Document is unfollowed successfully", siteLink);
         }else{
-            console.log("Document unfollow error : " + docLink + " " + response.statusText);
+            console.log("Document unfollow error : " + siteLink + " " + response.statusText);
         }
     }catch(error){
         console.log('unFollowDocument Error', error);
     }
 };
 
-const followDocument = async (context: WebPartContext, docLink: string) => {
-    const responseUrl = `${context.pageContext.web.absoluteUrl}/_api/social.following/follow(ActorType=1,ContentUri=@v,Id=null)?@v='${docLink}'`;
+const followSite = async (context: WebPartContext, siteLink: string) => {
+    const responseUrl = `${context.pageContext.web.absoluteUrl}/_api/social.following/follow(ActorType=2,ContentUri=@v,Id=null)?@v='${siteLink}'`;
 
     let spOptions: ISPHttpClientOptions = {
         headers:{
@@ -61,9 +62,9 @@ const followDocument = async (context: WebPartContext, docLink: string) => {
     try{
         const response = await context.spHttpClient.post(responseUrl, SPHttpClient.configurations.v1, spOptions);
         if (response.ok){
-            console.log("Document is unfollowed successfully", docLink);
+            console.log("Document is unfollowed successfully", siteLink);
         }else{
-            console.log("Document unfollow error : " + docLink + " " + response.statusText);
+            console.log("Document unfollow error : " + siteLink + " " + response.statusText);
         }
     }catch(error){
         console.log('unFollowDocument Error', error);
