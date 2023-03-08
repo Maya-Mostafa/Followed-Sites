@@ -16,6 +16,6 @@
     }
   },
   "paths": {
-    "zippedPackage": "solution/followed-sites.sppkg"
+    "zippedPackage": "solution/peel-followed-sites.sppkg"
   }
 }
